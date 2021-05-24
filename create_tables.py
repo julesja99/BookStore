@@ -11,7 +11,7 @@ mydb = mysql.connector.connect(
   auth_plugin="mysql_native_password",
   database="test"
 )
-
+ 
 mycursor = mydb.cursor()
 
 # create database

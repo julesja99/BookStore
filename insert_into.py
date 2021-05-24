@@ -86,10 +86,10 @@ val_comment = [
 # mycursor.executemany(sql_author, val_author)
 # mycursor.executemany(sql_writes, val_writes)
 # mycursor.execute(sql_super)
-mycursor.executemany(sql_comment, val_comment)
+#mycursor.executemany(sql_comment, val_comment)
 
 #mydb.commit()
 
-mycursor.execute("SELECT * FROM comment")
+mycursor.execute("SELECT * FROM author")
 for x in mycursor:
   print(x)

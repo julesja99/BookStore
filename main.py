@@ -4,9 +4,11 @@ $ export FLASK_ENV=development
 $ flask run
 '''
 import mysql.connector
-#import db_test
-from flask import Flask, Blueprint, redirect, render_template, request, flash, session, g
+import db_test
+from flask import Flask, redirect, render_template, request, flash, session, g
+from flask.helpers import url_for
 from werkzeug.security import generate_password_hash, check_password_hash
+
 
 mydb = mysql.connector.connect(
     host="localhost",
@@ -37,6 +39,7 @@ def register():
         error = None
 
         mycursor.execute('SELECT name FROM user WHERE loginName = %s', (username,))
+        
         if mycursor.fetchone() is not None:
             error = 'User {} is already registered.'.format(username)
             
@@ -45,9 +48,11 @@ def register():
             val = (username, generate_password_hash(password), 0, name, phone_number, address)
             mycursor.execute(sql, val)
             mydb.commit()
-            return redirect('/login')
+            return redirect(url_for('register_success', loginName = username))
+            
         flash(error)
     return render_template('register.html')
+
 
 @app.route('/register_manager', methods = ('POST', 'GET'))
 def register_manager():
@@ -72,10 +77,14 @@ def register_manager():
             val = (username, generate_password_hash(password), 1, name, phone_number, address)
             mycursor.execute(sql, val)
             mydb.commit()
-            return redirect('/login')
+            redirect(url_for('register_success', loginName = username))
         flash(error)
     return render_template('register_manager.html')
 
+@app.route('/register_success/<loginName>')
+def register_success(loginName):
+
+    return render_template('register_success.html', loginName = loginName) 
 
 @app.route('/login', methods=('GET', 'POST'))
 def login():
@@ -123,7 +132,7 @@ def book(isbn):
     comments = []
 
     book_sql = mycursor.execute('SELECT * FROM Book WHERE isbn13 = %s', (isbn,))
-    sql_result = mycursor.fetchone()
+    sql_result = book_sql.fetchone()
 
     book['isbn13'] = sql_result[2] # 9780439358071
     book['title'] = sql_result[1]
@@ -193,10 +202,10 @@ def logout():
     session.clear()
     return redirect('/')
 
+        
 @app.route('/searchbook', methods=('GET', 'POST'))
 def searchBook():
-    mycursor = mydb.cursor()
-    books = [] 
+    
     if request.method == 'POST':
         
         title = request.form['title']
@@ -207,93 +216,12 @@ def searchBook():
 
         order_by = request.form['order_by']
 
-        if title != '': # if user input title
-            if order_by == 'year':
-                mycursor.execute('SELECT isbn13, title, publication_date, average_rating FROM (SELECT isbn13, title, publication_date, bookID FROM Book WHERE title LIKE %s) B INNER JOIN (select bookID, AVG(book_score) average_rating from Comment GROUP BY bookID) C ON C.bookID = B.bookID ORDER BY publication_date', ('%' + title + '%',)) 
+        db_opr_obj = db_test.db_operations("test") # use sql script
+        books = db_opr_obj.searchBook(title, author, degree_authorship, publisher,language_code, order_by)
 
-            elif order_by == 'average_rating':
-                mycursor.execute('SELECT isbn13, title, publication_date, average_rating FROM (SELECT isbn13, title, publication_date, bookID FROM Book WHERE title LIKE %s) B INNER JOIN (select bookID, AVG(book_score) average_rating from Comment GROUP BY bookID) C ON C.bookID = B.bookID ORDER BY average_rating', ('%' + title + '%',)) 
 
-            else:
-                mycursor.execute('SELECT isbn13, title, publication_date, average_rating FROM (SELECT isbn13, title, publication_date, bookID FROM Book WHERE title LIKE %s) B INNER JOIN (select bookID, AVG(book_score) average_rating from Comment GROUP BY bookID) C ON C.bookID = B.bookID ORDER BY publication_date, average_rating', ('%' + title + '%',)) 
 
-            
-            for data in mycursor.fetchall():
-                book = dict()
-                book['isbn13'] = data[0]
-                book['title'] = data[1]
-                book['publication_date'] = data[2]
-                book['average_rating'] = data[3]
-                books.append(book)
-
-        if author != '':
-            if degree_authorship == 1:
-                if order_by == 'year':
-                    mycursor.execute('select isbn13, title, publication_date, average_rating FROM Book B INNER JOIN (select bookID from (select * from Writes GROUP BY bookID HAVING COUNT(authorID) = 1) W INNER JOIN (select authorID from author where authorName = %s) A ON W.authorID = A.authorID) R ON B.bookID = R.bookID order by publication_date', (author,))
-                elif order_by == 'average_rating':
-                    mycursor.execute('select isbn13, title, publication_date, average_rating FROM Book B INNER JOIN (select bookID from (select * from Writes GROUP BY bookID HAVING COUNT(authorID) = 1) W INNER JOIN (select authorID from author where authorName = %s) A ON W.authorID = A.authorID) R ON B.bookID = R.bookID order by average_rating', (author,))
-                else:
-                    mycursor.execute('select isbn13, title, publication_date, average_rating FROM Book B INNER JOIN (select bookID from (select * from Writes GROUP BY bookID HAVING COUNT(authorID) = 1) W INNER JOIN (select authorID from author where authorName = %s) A ON W.authorID = A.authorID) R ON B.bookID = R.bookID order by publication_date, average_rating', (author,))
-                for data in mycursor.fetchall():
-                    book = dict()
-                    book['isbn13'] = data[0]
-                    book['title'] = data[1]
-                    book['publication_date'] = data[2]
-                    book['average_rating'] = data[3]
-                    books.append(book)
-            elif degree_authorship == 2:
-                if order_by == 'year':
-                    mycursor.execute('select isbn13, title, publication_date, average_rating FROM Book B INNER JOIN (select bookID from (select * from Writes GROUP BY bookID HAVING COUNT(authorID) = 2) W INNER JOIN (select authorID from author where authorName = %s) A ON W.authorID = A.authorID) R ON B.bookID = R.bookID order by publication_date', (author,))
-                elif order_by == 'average_rating':
-                    mycursor.execute('select isbn13, title, publication_date, average_rating FROM Book B INNER JOIN (select bookID from (select * from Writes GROUP BY bookID HAVING COUNT(authorID) = 2) W INNER JOIN (select authorID from author where authorName = %s) A ON W.authorID = A.authorID) R ON B.bookID = R.bookID order by average_rating', (author,))
-                else:
-                    mycursor.execute('select isbn13, title, publication_date, average_rating FROM Book B INNER JOIN (select bookID from (select * from Writes GROUP BY bookID HAVING COUNT(authorID) = 2) W INNER JOIN (select authorID from author where authorName = %s) A ON W.authorID = A.authorID) R ON B.bookID = R.bookID order by publication_date, average_rating', (author,))
-                for data in mycursor.fetchall():
-                    book = dict()
-                    book['isbn13'] = data[0]
-                    book['title'] = data[1]
-                    book['publication_date'] = data[2]
-                    book['average_rating'] = data[3]
-                    books.append(book)
-
-        if publisher != '':
-            if order_by == 'year':
-                mycursor.execute('SELECT isbn13, title, publication_date, average_rating FROM (SELECT * FROM Book WHERE publisher = %s) B INNER JOIN (select bookID, AVG(book_score) average_rating from Comment GROUP BY bookID) C ON C.bookID = B.bookID ORDER BY publication_date', (publisher,))
-            elif order_by == 'average_rating':
-                mycursor.execute('SELECT isbn13, title, publication_date, average_rating FROM (SELECT * FROM Book WHERE publisher = %s) B INNER JOIN (select bookID, AVG(book_score) average_rating from Comment GROUP BY bookID) C ON C.bookID = B.bookID ORDER BY average_rating', (publisher,))
-            
-                
-            else: 
-                mycursor.execute('SELECT isbn13, title, publication_date, average_rating FROM (SELECT * FROM Book WHERE publisher = %s) B INNER JOIN (select bookID, AVG(book_score) average_rating from Comment GROUP BY bookID) C ON C.bookID = B.bookID ORDER BY publication_date, average_rating', (publisher,))
-            
-            for data in mycursor.fetchall():
-                book = dict()
-                book['isbn13'] = data[0]
-                book['title'] = data[1]
-                book['publication_date'] = data[2]
-                book['average_rating'] = data[3]
-                books.append(book)
-
-        if language_code != '':
-
-            if order_by == 'year':
-                mycursor.execute('SELECT isbn13, title, publication_date, average_rating FROM (SELECT * FROM Book WHERE language_code = %s) B INNER JOIN (select bookID, AVG(book_score) average_rating from Comment GROUP BY bookID) C ON C.bookID = B.bookID ORDER BY publication_date', (language_code,))
-            
-            elif order_by == 'average_rating':
-                mycursor.execute('SELECT isbn13, title, publication_date, average_rating FROM (SELECT * FROM Book WHERE language_code = %s) B INNER JOIN (select bookID, AVG(book_score) average_rating from Comment GROUP BY bookID) C ON C.bookID = B.bookID ORDER BY average_rating', (language_code,))
-            
-            else: 
-                mycursor.execute('SELECT isbn13, title, publication_date, average_rating FROM (SELECT * FROM Book WHERE language_code = %s) B INNER JOIN (select bookID, AVG(book_score) average_rating from Comment GROUP BY bookID) C ON C.bookID = B.bookID ORDER BY publication_date, average_rating', (language_code,))
-            
-            
-            for data in mycursor.fetchall():
-                book = dict()
-                book['isbn13'] = data[0]
-                book['title'] = data[1]
-                book['publication_date'] = data[2]
-                book['average_rating'] = data[3]
-                books.append(book)
-    
+        
     return render_template('browse_book.html', books = books)
 
 
@@ -421,3 +349,6 @@ def manage_stock():
             mycursor.execute('INSERT INTO Book (title, isbn13, language_code, num_pages, publication_date, publisher, cost, stock_level) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)', (title, isbn13, language_code, num_pages, publication_date, publisher, cost, stock_level))
             mydb.commit()
     return render_template('stock_management.html')
+
+if __name__ == '__main__':
+   app.run(debug = True)

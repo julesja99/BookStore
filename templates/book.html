@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <h1>{% block title %}Book Details{% endblock %}</h1> 
+{% endblock %}
+
+{% block content %}
+    <p>ISBN-13: {{book.isbn13}}</p>
+    <p>Title: {{book.title}}</p>
+    <p>Language: {{book.language_code}}</p>
+    <p>Number of pages: {{book.num_pages}}</p>
+    <p>Publication date: {{book.publication_date}}</p>
+    <p>Publisher: {{book.publisher}}</p>
+    <p>Cost: {{book.cost}}</p>
+    {% if book.stock_level == 0 %}
+        <p>Sold Out!</p>
+    {% endif %}
+    <p>------------------------------------------------------</p>
+
+    <form method="post">
+        <p>
+            <label for="num_copy">How many copies would you like to order?: </label>
+            <input type="number" name="num_copy" required>
+            <input type="submit" name = "submit" value="Place order">
+        </p>
+    </form>
+        <p>------------------------------------------------------</p>
+    <form method="post">
+        <p>
+            Leave a review for this book:
+        </p>
+        <p>
+            <label for="book_score">Rate from 1 to 10: </label>
+            <input type="number" name="book_score" required>
+        </p>
+        <p>
+            <label for="text_review">Comment (optional): </label>
+            <input type="text" name="text_review">
+        </p>
+        <input type="submit" name = "submit" value="Leave comment">
+    </form>
+
+    {% for comment in comments %} 
+        <tr>
+            <p>------------------------------------------------------</p>
+            <p><td>Book ISBN-13: {{comment.isbn13}}</td></p>
+            <p><td>Book title: {{comment.title}}</td></p>
+            <p><td>Book score: {{comment.book_score}}</td></p>
+            <p><td>Text review: {{comment.text_review}}</td></p>
+            <p><td>Usefulness score: {{comment.usefulness}}</td></p>
+            <p><td>Commenter ID: {{comment.commenter}}</td></p>
+            <form method="post">
+                <p>
+                    <label for="usefulness">Is this comment useful? (rate from 1 to 5): </label>
+                    <input type="number" name="usefulness" required>
+                    <label for="commenter">Please confirm the commenter's ID: </label>
+                    <input type="text" name="commenter" required>
+                    <input type="submit" name = "submit" value="Rate comment">
+
+                </p>
+            </form>
+            
+        </tr>
+    {% endfor %}
+{% endblock %}

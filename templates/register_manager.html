@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <h1>{% block title %}Register a Manager{% endblock %}</h1> 
+{% endblock %}
+
+{% block content %}
+    <form method="post">
+        <p>
+            <label for="loginName">Username: </label>
+            <input name="loginName" id="loginName" required>
+        </p>
+        <p>
+            <label for="password">Password: </label>
+            <input type="password" name="password" required>
+        </p>
+        <p>
+            <label for="name">Fullname: </label>
+            <input type="text" name="name" required>
+        </p>
+        <p>
+            <label for="phoneNumber">Phone Number: </label>
+            <input type="text" name="phoneNumber" required>
+        </p>
+        <p>
+            <label for="address">Address: </label>
+            <input type="text" name="address" required>
+        </p>
+        <input type="reset" value="Start Over">
+        <input type="submit" value="Register">
+        
+    </form>
+{% endblock %}

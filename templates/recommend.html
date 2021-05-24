@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <h1>{% block title %}Recommended for you{% endblock %}</h1> 
+{% endblock %}
+
+{% block content %}
+    
+    % for book in books %} 
+        <tr>
+            <p><td>Book ID: {{book.bookID}}</a></td></p>
+        </tr>
+    {% endfor %}
+  
+{% endblock %}

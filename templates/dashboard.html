@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <h1>{% block title %}Review Statistics{% endblock %}</h1> 
+{% endblock %}
+
+{% block content %}
+    <form method="post">
+        <p>
+            <label for="num_book">Top </label>
+            <input type="number" name="num_book" required>
+            <label for="num_book"> books by sales. </label>
+        </p>
+
+        <input type="submit" name = "submit" value="View books">
+    </form>
+    {% for book in books %} 
+        <tr>
+            <p>------------------------------------------------------</p>
+            <p><td>Book ID: {{book.bookID}}</a></td></p>
+            <p><td>Total Sales Amount: {{book.sum_amount}}</td></p>
+        </tr>
+    {% endfor %}
+    <form method="post">
+        <p>
+            <label for="num_authors">Top </label>
+            <input type="number" name="num_authors" required>
+            <label for="num_authors"> authors by sales. </label>
+        </p>
+
+        <input type="submit" name = "submit" value="View authors">
+    </form>
+    {% for author in authors %} 
+        <tr>
+            <p>------------------------------------------------------</p>
+            <p><td>Author ID: {{author.authorID}}</a></td></p>
+            <p><td>Total Sales Amount: {{author.sum_amount}}</td></p>
+        </tr>
+    {% endfor %}
+    <form method="post">
+        <p>
+            <label for="num_publishers">Top </label>
+            <input type="number" name="num_publishers" required>
+            <label for="num_publishers"> publishers by sales. </label>
+        </p>
+
+        <input type="submit" name = "submit" value="View publishers">
+    </form>
+    {% for publisher in authors %} 
+        <tr>
+            <p>------------------------------------------------------</p>
+            <p><td>Publisher: {{publisher.publisher}}</a></td></p>
+            <p><td>Total Sales Amount: {{publisher.sum_amount}}</td></p>
+        </tr>
+    {% endfor %}
+{% endblock %}

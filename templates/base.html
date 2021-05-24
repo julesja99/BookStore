@@ -1,0 +1,35 @@
+<!doctype html>
+<title>{% block title %}{% endblock %} - Bookstore</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<nav>
+  <h1>Book Store</h1>
+  <ul>
+    {% if session['user_id'] %}
+      <li><span>Hello {{ session['user_id'] }}!</span></li>
+      {% if session['role'] == 1 %}
+        <li><a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <li><a href="{{ url_for('manage_stock') }}">Stock Management</a>
+          <li><a href="{{ url_for('register_manager') }}">Register a Manager</a>
+        <li><a href="{{ url_for('logout') }}">Log Out</a>
+      {% else %} 
+        <li><a href="{{ url_for('searchBook') }}">Search Book</a>
+        <li><a href="{{ url_for('recommend') }}">Recommendation</a>
+        <li><a href="{{ url_for('browse_profile') }}">Browse Profile</a>
+        <li><a href="{{ url_for('logout') }}">Log Out</a>
+      {% endif %}
+    {% else %}
+      <li><a href="{{ url_for('home') }}">Home</a>
+      <li><a href="{{ url_for('register') }}">Register</a>
+      <li><a href="{{ url_for('login') }}">Log In</a>
+    {% endif %}
+  </ul>
+</nav>
+<section class="content">
+  <header>
+    {% block header %}{% endblock %}
+  </header>
+  {% for message in get_flashed_messages() %}
+    <div class="flash">{{ message }}</div>
+  {% endfor %}
+  {% block content %}{% endblock %}
+</section>

@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <h1>{% block title %}Search for Books{% endblock %}</h1> 
+{% endblock %}
+
+{% block content %}
+    <form method="post">
+        <p>
+            <label for="title">Title: </label>
+            <input type="text" name="title">
+        </p>
+        <p>
+            <label for="author">Author: </label>
+            <input type="text" name="author">
+        </p>
+        <p>
+            <label for="degree_authorship">Degree of Separation: </label>
+            <select name="degree_authorship">
+                <option value="">Must Select if "author" entered</option>
+                <option value=1>direct authorship</option>
+                <option value=2>1/2-degree of separation authorship</option>
+            </select>
+        </p>
+        <p>
+            <label for="publisher">Publisher: </label>
+            <input type="text" name="publisher">
+        </p>
+        <p>
+            <label for="language_code">Language: </label>
+            <select name="language_code">
+                <option value="">Choose language</option>
+                <option value="eng">English-UK</option>
+                <option value="en-US">English-US</option>
+                <option value="chn">Chinese</option>
+                <option value="krn">Korean</option>
+            </select>
+        </p>
+        <p>
+            <label for="order_by">Order results by: </label>
+            <select name="order_by">
+                <option value="year">Published Year</option>
+                <option value="average_rating">Average Score</option>
+                <option value="both">Both</option>
+            </select>
+        </p>
+        <input type="submit" value="Search">
+    </form>
+
+    {% for book in books %} 
+        <tr>
+            <p>------------------------------------------------------</p>
+            <p><td><a href="{{ url_for('book', isbn=book.isbn13) }}">Book ISBN-13: {{book.isbn13}}</a></td></p>
+            <p><td>Book title: {{book.title}}</td></p>
+            <p><td>Published date: {{book.publication_date}}</td></p>
+            <p><td>Book rating: {{book.average_rating}}</td></p>
+        </tr>
+    {% endfor %}
+{% endblock %}

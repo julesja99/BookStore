@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <h1>{% block title %}Browse Profiles{% endblock %}</h1> 
+{% endblock %}
+
+{% block content %}
+    <form method="post">
+        <p>
+            <label for="username">Search based on Username: </label>
+            <input type="text" name="username">
+        </p>
+        
+        <input type="submit" value="Search">
+        
+    </form>
+    <p>Name: {{target.name}}</p>
+    <p>Address: {{target.address}}</p>
+    <p>Number of Trusters: {{target.num_trusters}}</p>
+    <p>Comments left by {{target.name}}:</p>
+    
+    {% for comment in comments %} 
+        <tr>
+            <p>------------------------------------------------------</p>
+            <p><td>Book ISBN-13: {{comment.isbn13}}</td></p>
+            <p><td>Book title: {{comment.title}}</td></p>
+            <p><td>Book score: {{comment.book_score}}</td></p>
+            <p><td>Text review: {{comment.text_review}}</td></p>
+            <p><td>Usefulness score: {{comment.usefulness}}</td></p>
+            
+        </tr>
+    {% endfor %}
+
+{% endblock %}
